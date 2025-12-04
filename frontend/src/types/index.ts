@@ -1,50 +1,16 @@
-// Authentication & User Types
-export type Role = 'patient' | 'provider' | 'doctor';
-
-export interface User {
-  _id: string; // MongoDB ID
-  name: string;
-  email: string;
-  role: Role;
-  
-  // Patient Specific
-  age?: number;
-  assignedDoctor?: string;
-  illnesses?: string[]; // Array of conditions (e.g., ['Diabetes'])
-  
-  // Doctor/Provider Specific
-  specialization?: string;
-  licenseNumber?: string;
-  yearsOfExperience?: number;
-  bio?: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  user: User;
-}
-
-// --- Patient Dashboard Data Types ---
+export type Role = 'patient' | 'doctor' | 'provider';
 
 export interface WellnessGoal {
-  id: string;
+  _id: string;
   title: string;
   status: 'active' | 'achieved' | 'overdue';
-  progress: number; // 0 to 100
+  progress: number;
 }
 
 export interface DoctorTip {
-  id: string;
+  _id: string; // Changed to _id to match MongoDB default
   content: string;
   dateAdded: string;
-}
-
-export interface UpcomingSchedule {
-  id: string;
-  title: string;
-  doctorName: string;
-  date: string; // ISO Date string
-  status: 'Confirmed' | 'Pending';
 }
 
 export interface DashboardData {
@@ -55,18 +21,47 @@ export interface DashboardData {
     needsAttention: string[];
   };
   tips: DoctorTip[];
-  upcomingSchedules: UpcomingSchedule[];
+  upcomingSchedules: {
+    _id: string; // Changed to _id to match MongoDB default
+    title: string;
+    doctorName: string;
+    date: string;
+    status: 'Confirmed' | 'Pending';
+  }[];
 }
 
-// --- General Appointment Types ---
+export interface User {
+  _id: string; // FIXED: Changed from 'id' to '_id' to match your error
+  name: string;
+  email: string;
+  role: Role;
+  
+  // Patient specific
+  age?: number;
+  assignedDoctor?: string;
+  
+  // Doctor/Provider specific
+  specialization?: string;
+  licenseNumber?: string;      // Added for AuthPage
+  yearsOfExperience?: number;  // Added for AuthPage
+  bio?: string;                // Added for AuthPage
+}
+
+export interface Goal {
+  _id: string; // Changed to _id
+  title: string;
+  target: string;
+  status: 'active' | 'achieved' | 'overdue';
+  progress: number; // 0-100
+}
 
 export interface Appointment {
-  id: string;
+  _id: string; // Changed to _id
   patientName: string;
   doctorName: string;
   date: string;
   time: string;
   reason: string;
   status: 'scheduled' | 'completed' | 'cancelled';
-  priority?: 'critical' | 'moderate' | 'regular'; // Doctor view priority
+  priority?: 'critical' | 'moderate' | 'regular';
 }
