@@ -1,4 +1,10 @@
-# WellnessConnect – Flow Overview
+<<<<<<<<< Temporary merge branch 1
+# HCL-Hackathon
+Collaborative project
+Testing...123
+nikhil
+=========
+# WellnessConnect Frontend – Flow Overview
 
 This document describes the **user flow** for the WellnessConnect application.  
 The app supports **two roles**:
@@ -232,4 +238,5 @@ This flow ensures:
 - **Appointment-centric doctor view** focused on managing assigned patients and priorities.
 - Shared **Latest Health Information** to keep both patients and doctors updated.
 
-This README should act as a reference for implementing the UI structure, routing, and role-based rendering.
+This README should act as a reference for implementing the UI structure, routing, and role-based rendering in the frontend.
+>>>>>>>>> Temporary merge branch 2
