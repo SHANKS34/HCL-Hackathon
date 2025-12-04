@@ -9,6 +9,10 @@ const {
   deleteGoal,
   getAllProviders,
   getProviderById,
+  getPatientData,
+  addPatientIllness,
+  getProviders,
+  assignProvider,
 } = require('../controllers/dataController');
 const { protect, restrictTo } = require('../middleware/authMiddleware');
 
@@ -22,5 +26,10 @@ router.delete('/goals/:id', protect, restrictTo('patient'), deleteGoal);
 
 router.get('/providers', protect, getAllProviders);
 router.get('/providers/:id', protect, getProviderById);
+
+router.post('/getPatientData', protect, getPatientData);
+router.post('/addPatientIllness', protect, addPatientIllness);
+router.get('/getProviders', protect, getProviders);
+router.post('/assignProvider', protect, assignProvider);
 
 module.exports = router;

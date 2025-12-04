@@ -10,7 +10,7 @@ const generateToken = (id) => {
 const register = async (req, res) => {
   try {
     const { name, email, password, role, specialization, licenseNumber } = req.body;
-
+    console.log(req.body);
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }

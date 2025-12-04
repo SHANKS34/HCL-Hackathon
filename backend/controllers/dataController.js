@@ -197,6 +197,133 @@ const getProviderById = async (req, res) => {
   }
 };
 
+const getPatientData = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: 'Please provide userId' });
+    }
+
+    const patient = await User.findOne({
+      _id: userId,
+      role: 'patient'
+    }).select('-password');
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    const goals = await Goal.find({ user: userId }).sort({ createdAt: -1 });
+
+    const patientData = {
+      _id: patient._id,
+      name: patient.name,
+      email: patient.email,
+      age: patient.age,
+      gender: patient.gender,
+      healthConditions: patient.healthConditions,
+      profileComplete: patient.profileComplete,
+      goals: goals
+    };
+
+    res.json(patientData);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const addPatientIllness = async (req, res) => {
+  try {
+    const { userId, illness } = req.body;
+
+    if (!userId || !illness) {
+      return res.status(400).json({ message: 'Please provide userId and illness' });
+    }
+
+    const patient = await User.findOne({
+      _id: userId,
+      role: 'patient'
+    });
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    if (patient.healthConditions.includes(illness)) {
+      return res.status(400).json({ message: 'Illness already exists in health conditions' });
+    }
+
+    patient.healthConditions.push(illness);
+    await patient.save();
+
+    res.json({
+      message: 'Illness added successfully',
+      healthConditions: patient.healthConditions
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getProviders = async (req, res) => {
+  try {
+    const providers = await User.find({ role: 'provider' }).select('_id name');
+
+    const providersList = providers.map(provider => ({
+      userId: provider._id,
+      name: provider.name
+    }));
+
+    res.json(providersList);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const assignProvider = async (req, res) => {
+  try {
+    const { patientId, providerId } = req.body;
+
+    if (!patientId || !providerId) {
+      return res.status(400).json({ message: 'Please provide patientId and providerId' });
+    }
+
+    const patient = await User.findOne({
+      _id: patientId,
+      role: 'patient'
+    });
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    const provider = await User.findOne({
+      _id: providerId,
+      role: 'provider'
+    });
+
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    patient.assignedProvider = providerId;
+    await patient.save();
+
+    res.json({
+      message: 'Provider assigned successfully',
+      patient: {
+        _id: patient._id,
+        name: patient.name,
+        assignedProvider: providerId,
+        assignedProviderName: provider.name
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -206,4 +333,8 @@ module.exports = {
   deleteGoal,
   getAllProviders,
   getProviderById,
+  getPatientData,
+  addPatientIllness,
+  getProviders,
+  assignProvider,
 };

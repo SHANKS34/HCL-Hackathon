@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    assignedProvider: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     specialization: {
       type: String,
       trim: true,
