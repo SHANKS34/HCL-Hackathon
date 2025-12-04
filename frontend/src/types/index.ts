@@ -1,14 +1,14 @@
-export type Role = 'patient' | 'doctor';
+export type Role = 'patient' | 'doctor' | 'provider';
 
 export interface WellnessGoal {
-  id: string;
+  _id: string;
   title: string;
   status: 'active' | 'achieved' | 'overdue';
   progress: number;
 }
 
 export interface DoctorTip {
-  id: string;
+  _id: string; // Changed to _id to match MongoDB default
   content: string;
   dateAdded: string;
 }
@@ -22,7 +22,7 @@ export interface DashboardData {
   };
   tips: DoctorTip[];
   upcomingSchedules: {
-    id: string;
+    _id: string; // Changed to _id to match MongoDB default
     title: string;
     doctorName: string;
     date: string;
@@ -31,19 +31,24 @@ export interface DashboardData {
 }
 
 export interface User {
-  id: string;
+  _id: string; // FIXED: Changed from 'id' to '_id' to match your error
   name: string;
   email: string;
   role: Role;
+  
   // Patient specific
   age?: number;
   assignedDoctor?: string;
-  // Doctor specific
+  
+  // Doctor/Provider specific
   specialization?: string;
+  licenseNumber?: string;      // Added for AuthPage
+  yearsOfExperience?: number;  // Added for AuthPage
+  bio?: string;                // Added for AuthPage
 }
 
 export interface Goal {
-  id: string;
+  _id: string; // Changed to _id
   title: string;
   target: string;
   status: 'active' | 'achieved' | 'overdue';
@@ -51,12 +56,12 @@ export interface Goal {
 }
 
 export interface Appointment {
-  id: string;
+  _id: string; // Changed to _id
   patientName: string;
   doctorName: string;
   date: string;
   time: string;
   reason: string;
   status: 'scheduled' | 'completed' | 'cancelled';
-  priority?: 'critical' | 'moderate' | 'regular'; // For doctors
+  priority?: 'critical' | 'moderate' | 'regular';
 }

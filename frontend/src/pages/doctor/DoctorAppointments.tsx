@@ -3,9 +3,10 @@ import type { Appointment } from '../../types';
 
 // Mock Data
 const mockAppointments: Appointment[] = [
-  { id: '1', patientName: 'John Doe', doctorName: 'Me', date: '2025-10-24', time: '10:00', reason: 'Chest Pain', status: 'scheduled', priority: 'critical' },
-  { id: '2', patientName: 'Jane Smith', doctorName: 'Me', date: '2025-10-24', time: '11:00', reason: 'Flu', status: 'scheduled', priority: 'moderate' },
-  { id: '3', patientName: 'Alice Johnson', doctorName: 'Me', date: '2025-10-24', time: '12:00', reason: 'Routine', status: 'scheduled', priority: 'regular' },
+  // FIX 1: Changed 'id' to '_id'
+  { _id: '1', patientName: 'John Doe', doctorName: 'Me', date: '2025-10-24', time: '10:00', reason: 'Chest Pain', status: 'scheduled', priority: 'critical' },
+  { _id: '2', patientName: 'Jane Smith', doctorName: 'Me', date: '2025-10-24', time: '11:00', reason: 'Flu', status: 'scheduled', priority: 'moderate' },
+  { _id: '3', patientName: 'Alice Johnson', doctorName: 'Me', date: '2025-10-24', time: '12:00', reason: 'Routine', status: 'scheduled', priority: 'regular' },
 ];
 
 const DoctorAppointments: React.FC = () => {
@@ -52,7 +53,8 @@ const DoctorAppointments: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filteredApps.map((app) => (
-              <tr key={app.id} className="hover:bg-gray-50">
+              // FIX 2: Changed key from 'app.id' to 'app._id'
+              <tr key={app._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 font-medium text-gray-900">{app.patientName}</td>
                 <td className="px-6 py-4 text-gray-600">{app.time}</td>
                 <td className="px-6 py-4 text-gray-600">{app.reason}</td>
