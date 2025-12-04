@@ -6,15 +6,15 @@ import DashboardLayout from './components/DashboardLayout';
 // Patient Pages
 import PatientDashboard from './pages/patient/PatientDashboard';
 import PatientAppointments from './pages/patient/PatientAppointments';
-// import PatientGoals from './pages/patient/PatientGoals'; // Create similar to above
-// import PatientProfile from './pages/patient/PatientProfile'; // Create similar to above
+import PatientProfile from './pages/patient/PatientProfile'; // Imported here
 
 // Doctor Pages
-// import DoctorDashboard from './pages/doctor/DoctorDashboard'; // Create similar to above
 import DoctorAppointments from './pages/doctor/DoctorAppointments'; 
 
 // Placeholder for missing components to make code compile
-const Placeholder = ({ title }: { title: string }) => <div className="text-2xl font-bold text-gray-400">{title} Page</div>;
+const Placeholder = ({ title }: { title: string }) => (
+  <div className="text-2xl font-bold text-gray-400">{title} Page</div>
+);
 
 function App() {
   return (
@@ -30,7 +30,10 @@ function App() {
                 <Route path="dashboard" element={<PatientDashboard />} />
                 <Route path="appointments" element={<PatientAppointments />} />
                 <Route path="goals" element={<Placeholder title="Set Goals" />} />
-                <Route path="profile" element={<Placeholder title="Patient Profile" />} />
+                
+                {/* Updated this line to use the real component */}
+                <Route path="profile" element={<PatientProfile />} />
+                
                 <Route path="info" element={<Placeholder title="Health Info" />} />
                 <Route path="*" element={<Navigate to="dashboard" />} />
               </Routes>
