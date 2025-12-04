@@ -1,50 +1,41 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
 
-const protect = async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      req.user = await User.findById(decoded.id).select('-password');
-
-      if (!req.user) {
-        return res.status(401).json({ message: 'User not found' });
-      }
-
-      next();
-    } catch (error) {
-      console.error(error);
-      return res.status(401).json({ message: 'Not authorized, token failed' });
-    }
-  }
+// 1. Verify User is Logged In
+const protect = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'No token, authorization denied' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // { id, role }
+    next();
+  } catch (err) {
+    res.status(401).json({ message: 'Token is not valid' });
   }
 };
 
+// 2. Verify User is a Provider (Doctor)
+const providerOnly = (req, res, next) => {
+  if (req.user.role !== 'provider') {
+    return res.status(403).json({ message: 'Access denied: Providers only' });
+  }
+  next();
+};
+
+// 3. Generic role-based guard
 const restrictTo = (...roles) => {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ message: 'Not authenticated' });
+    // req.user.role comes from the JWT payload
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ message: `Access denied: allowed roles: ${roles.join(', ')}` });
     }
-
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        message: 'You do not have permission to perform this action'
-      });
-    }
-
     next();
   };
 };
 
-module.exports = { protect, restrictTo };
+module.exports = { protect, providerOnly, restrictTo };
