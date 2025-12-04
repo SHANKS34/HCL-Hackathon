@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/auth", // keep as-is or move '/api' into caller if you prefer
+  baseURL: "http://localhost:5000/api/", // keep as-is or move '/api' into caller if you prefer
   headers: {
     "Content-Type": "application/json",
   },
