@@ -1,5 +1,35 @@
 export type Role = 'patient' | 'doctor';
 
+export interface WellnessGoal {
+  id: string;
+  title: string;
+  status: 'active' | 'achieved' | 'overdue';
+  progress: number;
+}
+
+export interface DoctorTip {
+  id: string;
+  content: string;
+  dateAdded: string;
+}
+
+export interface DashboardData {
+  goalsMatch: {
+    percentage: number;
+    statusMessage: string;
+    onTrack: string[];
+    needsAttention: string[];
+  };
+  tips: DoctorTip[];
+  upcomingSchedules: {
+    id: string;
+    title: string;
+    doctorName: string;
+    date: string;
+    status: 'Confirmed' | 'Pending';
+  }[];
+}
+
 export interface User {
   id: string;
   name: string;
