@@ -1,16 +1,50 @@
-export type Role = 'patient' | 'doctor';
+// Authentication & User Types
+export type Role = 'patient' | 'provider' | 'doctor';
+
+export interface User {
+  _id: string; // MongoDB ID
+  name: string;
+  email: string;
+  role: Role;
+  
+  // Patient Specific
+  age?: number;
+  assignedDoctor?: string;
+  illnesses?: string[]; // Array of conditions (e.g., ['Diabetes'])
+  
+  // Doctor/Provider Specific
+  specialization?: string;
+  licenseNumber?: string;
+  yearsOfExperience?: number;
+  bio?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+// --- Patient Dashboard Data Types ---
 
 export interface WellnessGoal {
   id: string;
   title: string;
   status: 'active' | 'achieved' | 'overdue';
-  progress: number;
+  progress: number; // 0 to 100
 }
 
 export interface DoctorTip {
   id: string;
   content: string;
   dateAdded: string;
+}
+
+export interface UpcomingSchedule {
+  id: string;
+  title: string;
+  doctorName: string;
+  date: string; // ISO Date string
+  status: 'Confirmed' | 'Pending';
 }
 
 export interface DashboardData {
@@ -21,34 +55,10 @@ export interface DashboardData {
     needsAttention: string[];
   };
   tips: DoctorTip[];
-  upcomingSchedules: {
-    id: string;
-    title: string;
-    doctorName: string;
-    date: string;
-    status: 'Confirmed' | 'Pending';
-  }[];
+  upcomingSchedules: UpcomingSchedule[];
 }
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  // Patient specific
-  age?: number;
-  assignedDoctor?: string;
-  // Doctor specific
-  specialization?: string;
-}
-
-export interface Goal {
-  id: string;
-  title: string;
-  target: string;
-  status: 'active' | 'achieved' | 'overdue';
-  progress: number; // 0-100
-}
+// --- General Appointment Types ---
 
 export interface Appointment {
   id: string;
@@ -58,5 +68,5 @@ export interface Appointment {
   time: string;
   reason: string;
   status: 'scheduled' | 'completed' | 'cancelled';
-  priority?: 'critical' | 'moderate' | 'regular'; // For doctors
+  priority?: 'critical' | 'moderate' | 'regular'; // Doctor view priority
 }
