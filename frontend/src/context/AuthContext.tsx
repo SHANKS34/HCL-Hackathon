@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { User, Role } from '../types';
-import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+// src/context/AuthContext.tsx
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
+import type { User } from "../types";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (data: any) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  login: (data: { email: string; password: string }) => Promise<void>;
+  register: (data: Record<string, any>) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -15,72 +16,116 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // 1. Check if user is already logged in on page load
+  // Helper: set token in axios defaults + localStorage
+  const persistToken = (token: string | null) => {
+    if (token) {
+      localStorage.setItem("token", token);
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    } else {
+      localStorage.removeItem("token");
+      delete api.defaults.headers.common["Authorization"];
+    }
+  };
+
+  // Helper: save user
+  const persistUser = (u: any | null) => {
+    setUser(u);
+    if (u) localStorage.setItem("user", JSON.stringify(u));
+    else localStorage.removeItem("user");
+  };
+
+  // 1. On load: try to validate token & fetch current user
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          // Endpoint 4: Get Current User
-          const { data } = await api.get('/auth/me');
-          // Adjust 'data.data' vs 'data' depending on your backend response structure
-          // Assuming backend returns { success: true, data: user } or just user
-          setUser(data.data || data); 
-        } catch (error) {
-          console.error('Session expired', error);
-          localStorage.removeItem('token');
-        }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+      // ensure axios has header for this check
+      persistToken(token);
+
+      try {
+        const resp = await api.get("/auth/me");
+        // backend may return { success:true, data: user } or user directly
+        const body = resp.data;
+        const resolvedUser = body?.data ?? body;
+        persistUser(resolvedUser || null);
+      } catch (err) {
+        console.warn("Auth check failed — clearing session", err);
+        persistToken(null);
+        persistUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
     checkAuth();
   }, []);
 
-  // 2. Login Function
-  const login = async (formData: any) => {
+  // login
+  const login = async ({ email, password }: { email: string; password: string }) => {
     try {
-      // Endpoint 3: Login
-      const { data } = await api.post('/auth/login', formData);
-      
-      localStorage.setItem('token', data.token);
-      setUser(data.user || null); // Adjust based on backend response
+      const resp = await api.post("/auth/login", { email, password });
+      const data = resp.data;
+      // Expecting { token, user } but be robust
+      const token = data?.token ?? data?.data?.token;
+      const userObj = data?.user ?? data?.data?.user ?? data?.data ?? data;
 
-      // Redirect based on role
-      const role = data.user?.role;
-      if (role === 'patient') navigate('/patient/dashboard');
-      else if (role === 'provider' || role === 'doctor') navigate('/doctor/dashboard');
-    } catch (error) {
-      console.error('Login failed', error);
-      throw error; // Throw to component to show error message
+      if (!token) {
+        // If no token returned, still allow userObj and rely on subsequent endpoints (or throw)
+        console.warn("Login response did not contain token.");
+      } else {
+        persistToken(token);
+      }
+
+      persistUser(userObj || null);
+
+      // route based on role
+      const role = userObj?.role;
+      if (role === "patient") navigate("/patient/dashboard");
+      else if (role === "provider" || role === "doctor") navigate("/doctor/dashboard");
+      else navigate("/"); // fallback
+    } catch (err) {
+      // rethrow so UI can display message
+      throw err;
     }
   };
 
-  // 3. Register Function
-  const register = async (formData: any) => {
+  // register
+  const register = async (formData: Record<string, any>) => {
     try {
-      // Endpoint 1 & 2: Register (URL is same, body differs)
-      const { data } = await api.post('/auth/register', formData);
-      
-      localStorage.setItem('token', data.token);
-      setUser(data.user || null);
+      const resp = await api.post("/auth/register", formData);
+      const data = resp.data;
 
-      const role = data.user?.role;
-      if (role === 'patient') navigate('/patient/dashboard');
-      else if (role === 'provider' || role === 'doctor') navigate('/doctor/dashboard');
-    } catch (error) {
-      console.error('Registration failed', error);
-      throw error;
+      // If backend returns token, persist it; otherwise UI may auto-login.
+      const token = data?.token ?? data?.data?.token;
+      const userObj = data?.user ?? data?.data?.user ?? data?.data ?? data;
+
+      if (token) persistToken(token);
+      persistUser(userObj || null);
+
+      // If token was not returned, frontend caller (AuthPage) can call login() after register.
+      return data;
+    } catch (err) {
+      throw err;
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-    navigate('/');
+    persistToken(null);
+    persistUser(null);
+    navigate("/");
   };
 
   return (
@@ -91,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 };
