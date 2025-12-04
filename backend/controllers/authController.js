@@ -10,7 +10,7 @@ const generateToken = (id) => {
 const register = async (req, res) => {
   try {
     const { name, email, password, role, specialization, licenseNumber } = req.body;
-    console.log(req.body);
+
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
@@ -61,31 +61,38 @@ const register = async (req, res) => {
   }
 };
 
-const login = async (req, res) => {
+// LOGIN API
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide all fields' });
-    }
-
+    // 👇 add .select('+password')
     const user = await User.findOne({ email }).select('+password');
+    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-    if (user && (await user.matchPassword(password))) {
-      res.json({
-        _id: user._id,
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // don’t return password to client
+    res.json({
+      token,
+      user: {
+        id: user._id,
         name: user.name,
-        email: user.email,
         role: user.role,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid email or password' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-};
+});
+
 
 const getMe = async (req, res) => {
   try {
