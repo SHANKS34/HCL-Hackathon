@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Appointment } from '../../types';
+import type { Appointment } from '../../types';
 
 // Mock Data
 const mockAppointments: Appointment[] = [

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Role } from '../types';
+import type { Role } from '../types';
 
 const AuthPage: React.FC = () => {
   const { login } = useAuth();
