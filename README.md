@@ -1,6 +1,6 @@
-# WellnessConnect Frontend – Flow Overview
+# WellnessConnect – Flow Overview
 
-This document describes the **frontend user flow** for the WellnessConnect application.  
+This document describes the **user flow** for the WellnessConnect application.  
 The app supports **two roles**:
 
 - **Patient**
@@ -203,7 +203,7 @@ High-level navigation logic (frontend):
 
 ---
 
-## 5. Frontend Notes (Optional Implementation Hints)
+## 5. Overall Flow Notes (Optional Implementation Hints)
 
 > This section is just for implementation clarity; adjust based on actual tech stack.
 
@@ -222,7 +222,7 @@ High-level navigation logic (frontend):
 
 ## 6. Summary
 
-This frontend flow ensures:
+This flow ensures:
 
 - **Clear separation** between Patient and Doctor experiences.
 - **Simple onboarding**:
@@ -232,4 +232,4 @@ This frontend flow ensures:
 - **Appointment-centric doctor view** focused on managing assigned patients and priorities.
 - Shared **Latest Health Information** to keep both patients and doctors updated.
 
-This README should act as a reference for implementing the UI structure, routing, and role-based rendering in the frontend.
+This README should act as a reference for implementing the UI structure, routing, and role-based rendering.
